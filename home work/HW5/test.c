@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+FILE *f;
 int IsPassOk(void);
 
 int main(void)
 {
 	int PwStatus;
-
+	
 	puts("Enter password:");
 	PwStatus = IsPassOk();
 	
@@ -24,8 +24,11 @@ int main(void)
 int IsPassOk(void)
 {
 	char Pass[12];
-
-	gets(Pass);
-
+	char *ptr = &Pass;
+	f = fopen("file.txt", "r");
+	fread(&Pass, sizeof(char),36, f);
+	//gets(Pass);
+	printf("%s\n", Pass);
+	//printf("%x\n", *ptr);
 	return 0 == strcmp(Pass, "test");
 }
