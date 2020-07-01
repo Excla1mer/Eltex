@@ -1,8 +1,4 @@
-#include <stdio.h>
-struct test {
-	char a;
-	int b;
-};
+#include "header.h"
 
 int main() {
 	struct test test1;

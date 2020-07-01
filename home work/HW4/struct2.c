@@ -1,26 +1,22 @@
-#include <stdio.h>
-#include <string.h>
+#include "header.h"
 #define N 5
-
-struct book {
-	char Name[10];
-	unsigned long int Number;
-};
 
 int main() {
 	struct book list[N] = {{{'S', 'e', 'r', 'g', 'e', 'y'}, 88005553535},
 				{{'D', 'i','m', 's'}, 654862135}};
 	char a;
-	char str[255];
 	int b;
+	char str[255];
+	int find = 0;
 	do {
-		printf("---------Menu-------\n");
-		printf("|  [1] View list   |\n");
-		printf("|  [2] Add user    |\n");
-		printf("|  [3] Remove user |\n");
-		printf("--------------------\n");
-		//scanf("%c", &a);
-		fgets(&a, 3, stdin);
+		printf("\t---------Menu-------\n");
+		printf("\t|  [1] View list   |\n");
+		printf("\t|  [2] Add user    |\n");
+		printf("\t|  {3} Find user   |\n");
+		printf("\t|  [4] Remove user |\n");
+		printf("\t--------------------\n");
+		scanf("%c", &a);
+		//fgets(&a, 2, stdin);
 		switch(a) {
 			//Viviod vsego spiska
 			case '1':
@@ -41,8 +37,24 @@ int main() {
 					}
 				}
                                 break;
+                       case '3':
+                       	printf("Enter Name:");
+				scanf("%s", str);
+				for(int i = 0; i < N; i++) {
+					if(strcmp(str, list[i].Name) == 0) {
+						find++;
+						printf("Name: %s Number: %ld\n", list[i].Name, list[i].Number);
+					}
+				}
+				if(find == 0) {
+					printf("No one found ;(\n"); 
+				}
+				else {
+					find = 0;
+				}
+                       	break;
                        //Ydalenie usera po imeni
-			case '3':
+			case '4':
 				printf("Enter Name:");
 				scanf("%s", str);
 				for(int i = 0; i < N; i++) {
@@ -56,7 +68,7 @@ int main() {
 			default :
 				break;
 		}
-		//scanf("%c", &a);
+		scanf("%c", &a);
 	}while(1);
 
 }
