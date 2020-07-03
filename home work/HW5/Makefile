@@ -1,15 +1,20 @@
 BIN := test
-SOURCE := *.c
+SOURCE := test.c
 BIN1  := gdb_test
-all: $(BIN)
+file: $(BIN)
 gdb: $(BIN1)
+union: union
 $(BIN): $(SOURCE)
-		gcc $(SOURCE) -o $(BIN) -fno-stack-protector -g
-		gdb ./$(BIN) < file.txt
+		gcc $(SOURCE) -o $(BIN) -fno-stack-protector -g -DSAM
+		./$(BIN) < file1.txt
 		rm $(BIN)
 $(BIN1): $(SOURCE)
-		gcc $(SOURCE) -o $(BIN1) -fno-stack-protector -g
+		gcc $(SOURCE) -o $(BIN1) -fno-stack-protector -g -DGDB
 		gdb ./$(BIN1)
 		rm $(BIN1)
+union: union.c
+		gcc union.c -o union
+		./union
+		rm union
 clear:
 		rm $(BIN) $(BIN1)

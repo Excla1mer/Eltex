@@ -1,16 +1,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-FILE *f;
-int IsPassOk(void);
 
+int IsPassOk(void);
+FILE *f;
 int main(void)
 {
 	int PwStatus;
-	
+	printf("%p\n", main);
 	puts("Enter password:");
 	PwStatus = IsPassOk();
-	
 	if (PwStatus == 0) {
 		printf("Bad password!\n");
 		exit(1);
@@ -25,10 +24,16 @@ int IsPassOk(void)
 {
 	char Pass[12];
 	char *ptr = &Pass;
-	f = fopen("file.txt", "r");
+#ifdef GDB
+	f = fopen("file1.txt", "r");
 	fread(&Pass, sizeof(char),36, f);
-	//gets(Pass);
 	printf("%s\n", Pass);
-	//printf("%x\n", *ptr);
+#endif
+#ifdef SAM
+	f = fopen("file1.txt", "r");
+	gets(Pass);
+	printf("%s\n", Pass);
+#endif
+	fclose(f);
 	return 0 == strcmp(Pass, "test");
 }
