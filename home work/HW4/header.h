@@ -2,6 +2,7 @@
 #define _HEADER_
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
 #include <alloca.h>

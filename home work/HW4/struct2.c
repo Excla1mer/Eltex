@@ -3,12 +3,14 @@
 int main() {
 
 	struct book *list = malloc(sizeof(struct book));;
-	char a;
+	char a[255];
 	int Quantity = 0;
+	int b;
 	char str[255];
 	int find = 0;
 
 	do {
+		system("clear");
 		printf("\t---------Menu-------\n");
 		printf("\t|  [1] View list   |\n");
 		printf("\t|  [2] Add user    |\n");
@@ -16,18 +18,19 @@ int main() {
 		printf("\t|  [4] Remove user |\n");
 		printf("\t|  [5] Exit        |\n");
 		printf("\t--------------------\n");
-		scanf("%c", &a);
-		//fgets(&a, 2, stdin);
-		switch(a) {
+		fgets(&a, 2, stdin);
+		b = atoi(&a);
+		switch(b) {
 			//Viviod vsego spiska
-			case '1':
+			case 1:
 				for(int i = 0; i < Quantity; i++) {
 					if(list[i].Number  != 0)
 						printf("Name: %s Number: %ld\n", list[i].Name, list[i].Number);
 				}
+				scanf("%c",&str);
 				break;
 			//Dobavleni novogo usera v spisok
-			case '2':
+			case 2:
 				for(int i  = 0; i < Quantity; i++) {
 					if(list[i].Number == 0) {
 						printf("Enter name:");
@@ -60,8 +63,9 @@ int main() {
 				}
                                 break;
 			//Find user
-                       case '3':
-                       	printf("Enter Name:");
+                       case 3:
+	                       	printf("Enter Name:");
+				*str = "";
 				scanf("%s", str);
 				for(int i = 0; i < Quantity; i++) {
 					if(strcmp(str, list[i].Name) == 0) {
@@ -75,12 +79,13 @@ int main() {
 				else {
 					find = 0;
 				}
-                       	break;
+				scanf("%c", &str);
+                	       	break;
                        //Delete user by name
-			case '4':
+			case 4:
 				printf("Enter Name:");
 				scanf("%s", str);
-				for(int i = 0; i < N; i++) {
+				for(int i = 0; i < Quantity; i++) {
 					if(strcmp(str, list[i].Name) == 0) {
 						memset(list[i].Name, 0, sizeof(list[i].Name));
 						list[i].Number = 0;
@@ -89,13 +94,13 @@ int main() {
 				}
                                 break;
 			//Exit
-			case '5':
+			case 5:
 				_Exit(0);
 				break;
 			default :
 				break;
 		}
-		scanf("%c", &a);
+		scanf("%c",&a);
 	}while(1);
 
 }

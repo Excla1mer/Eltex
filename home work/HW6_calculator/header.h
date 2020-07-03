@@ -1,3 +1,6 @@
+#ifndef _HEADER_
+#define _HEADER
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,3 +10,6 @@ float sum(float Result);
 float sub(float Result);
 float mult(float Result);
 float my_div(float Result);
+
+
+#endif

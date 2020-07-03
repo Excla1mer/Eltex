@@ -3,7 +3,7 @@
 float my_div(float Result) {
 	float x;
 	do {
-		printf("%f / ", Result);
+		printf("%.4f / ", Result);
 		scanf("%f", &x);
 		if( x == 0) {
 			printf("Wrong input!!!\n");
