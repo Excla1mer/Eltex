@@ -23,14 +23,17 @@ int main() {
 		switch(b) {
 			//Viviod vsego spiska
 			case 1:
+				printf("\tView list\n");
 				for(int i = 0; i < Quantity; i++) {
 					if(list[i].Number  != 0)
 						printf("Name: %s Number: %ld\n", list[i].Name, list[i].Number);
 				}
+				printf("Press Enter to return to the menu\n");
 				scanf("%c",&str);
 				break;
 			//Dobavleni novogo usera v spisok
 			case 2:
+				printf("\tAdd user\n");
 				for(int i  = 0; i < Quantity; i++) {
 					if(list[i].Number == 0) {
 						printf("Enter name:");
@@ -59,11 +62,11 @@ int main() {
                                         scanf("%s", list[0].Name);
                                         printf("Enter Number: ");
                                         scanf("%ld", &list[0].Number);
-
 				}
                                 break;
 			//Find user
                        case 3:
+				printf("\tFind user\n");
 	                       	printf("Enter Name:");
 				*str = "";
 				scanf("%s", str);
@@ -79,22 +82,53 @@ int main() {
 				else {
 					find = 0;
 				}
+				printf("Press Enter to return to the menu\n");
 				scanf("%c", &str);
                 	       	break;
                        //Delete user by name
 			case 4:
+				printf("\tDelete user\n");
 				printf("Enter Name:");
 				scanf("%s", str);
 				for(int i = 0; i < Quantity; i++) {
-					if(strcmp(str, list[i].Name) == 0) {
-						memset(list[i].Name, 0, sizeof(list[i].Name));
-						list[i].Number = 0;
+                                        if(strcmp(str, list[i].Name) == 0) {
+                                                find++;
+                                        }
+                                }
+				switch(find) {
+
+					case 1:
+						for(int i = 0; i < Quantity; i++) {
+		                                        if(strcmp(str, list[i].Name) == 0) {
+                		                        	memset(list[i].Name, 0, sizeof(list[i].Name));
+                                		                list[i].Number = 0;
+                                              			break;
+							}
+                               			}
 						break;
-					}
+					case 0:
+						printf("Wrong enter!! No one found to delete!\n");
+						break;
+					default :
+						printf("Two or more users with this name! Please enter Users Number to delete!\n");
+						printf("Enter Number:");
+						unsigned long int x;
+						scanf("%ld", &x);
+						for(int i = 0; i < Quantity; i++) {
+        		                                if(x == list[i].Number) {
+                        		                        memset(list[i].Name, 0, sizeof(list[i].Name));
+                                        		        list[i].Number = 0;
+                                              			break;
+                                       			 }
+	                                	}
+
+						break;
+
 				}
                                 break;
 			//Exit
 			case 5:
+				free(list);
 				_Exit(0);
 				break;
 			default :
