@@ -23,6 +23,7 @@ int main() {
 		switch(b) {
 			//Viviod vsego spiska
 			case 1:
+				system("clear");
 				printf("\tView list\n");
 				for(int i = 0; i < Quantity; i++) {
 					if(list[i].Number  != 0)
@@ -33,6 +34,7 @@ int main() {
 				break;
 			//Dobavleni novogo usera v spisok
 			case 2:
+				system("clear");
 				printf("\tAdd user\n");
 				for(int i  = 0; i < Quantity; i++) {
 					if(list[i].Number == 0) {
@@ -66,6 +68,7 @@ int main() {
                                 break;
 			//Find user
                        case 3:
+				system("clear");
 				printf("\tFind user\n");
 	                       	printf("Enter Name:");
 				*str = "";
@@ -87,6 +90,7 @@ int main() {
                 	       	break;
                        //Delete user by name
 			case 4:
+				system("clear");
 				printf("\tDelete user\n");
 				printf("Enter Name:");
 				scanf("%s", str);
