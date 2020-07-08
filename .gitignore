@@ -2,3 +2,5 @@ test.txt
 *.o
 *.i
 *.s
+test operators/*
+Test float/*
