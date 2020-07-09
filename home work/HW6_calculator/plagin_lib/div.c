@@ -1,7 +1,7 @@
 #include "header.h"
 
 char What_i_have() {
-        char return_name[255] = {'m','y','_','d','i','v'};
+        char return_name[255] = {'m','y','_','d','i','v'}; // Строка содержащая названия всех функций библиотеки
         return Draw(return_name);
 }
 void Draw(char *return_name) {

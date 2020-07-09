@@ -16,13 +16,17 @@ int main() {
 	printf("Name of libs: libsum.so libsub.so libdiv.so libmult.so\n"); 
 	do {
 		do {
+			
 			printf("Enter library name: ");
         	        scanf("%s", &Namelib);
-	                ptr[count_of_libs] = dlopen(Namelib, RTLD_NOW);
-			if(!ptr[count_of_libs])
+	                // Запись библиотеки в массив указателей на эти библиотеки
+			ptr[count_of_libs] = dlopen(Namelib, RTLD_NOW);
+			if(!ptr[count_of_libs]) // Проверка на существование введенной библиотеки
 				printf("Wrong lib\n");
 		}while(!ptr[count_of_libs]);
 		count_of_libs++;
+		// Запись информационной функции What_i_have в указатель на функцию 
+		// What_i_have выведет строку с названиями всех функций имеющихся в библиотеке
        		name = dlsym(ptr[count_of_funcs], "What_i_have");
 		Name=name;
 		Name();
@@ -43,13 +47,13 @@ int main() {
 	scanf("%c", &a);
 	while(1) {	
 		system("clear");
-		draw(result, funcs, count_of_funcs);
+		draw(result, funcs, count_of_funcs);// Отрисовка калькулятора
 		fgets(&a, 2, stdin);
 		b = atoi(&a);
-		for(int j = 0; j < count_of_libs; j++) {
-			for(int i = 0; i < count_of_funcs; i++) {
+		for(int j = 0; j < count_of_libs; j++) {// Перебор всех введенных библиотек
+			for(int i = 0; i < count_of_funcs; i++) {// Перебор всех добавленных функций
 	                        if(i == b) {
-					if(dlsym(ptr[j], funcs[i]) == 0) {
+					if(dlsym(ptr[j], funcs[i]) == 0) {// Функция нашлась
 						func = dlsym(ptr[i], funcs[i]);
                                         	result = func(result);
 						j = count_of_libs;
@@ -63,9 +67,9 @@ int main() {
                 	}
 
 		}
-		if( b == count_of_funcs )
+		if( b == count_of_funcs ) // RESET
 			result = 0.0;
-		if( b == count_of_funcs + 1) { 
+		if( b == count_of_funcs + 1) { // EXIT
 			_Exit(0);
 		}
 		scanf("%c", &a);
