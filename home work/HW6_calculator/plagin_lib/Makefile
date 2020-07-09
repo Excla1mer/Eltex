@@ -1,6 +1,6 @@
 
 
-all: result 
+all: result libsub.so libsum.so libdiv.so libmult.so 
 
 libsub.so: sub.c
 		gcc -fPIC sub.c -c

@@ -13,15 +13,15 @@ int main() {
 	void *name;
 	char (*Name)();
 	float (*func)(float);
-	
+	printf("Name of libs: libsum.so libsub.so libdiv.so libmult.so\n"); 
 	do {
-		printf("Enter library name: ");
-		scanf("%s", &Namelib);
-		ptr[count_of_libs] = dlopen(Namelib, RTLD_NOW);   
-		if (!ptr[count_of_libs]) {
-	        	fprintf(stderr,"dlopen() error: %s\n", dlerror());
-	        	exit(1);
-		};
+		do {
+			printf("Enter library name: ");
+        	        scanf("%s", &Namelib);
+	                ptr[count_of_libs] = dlopen(Namelib, RTLD_NOW);
+			if(!ptr[count_of_libs])
+				printf("Wrong lib\n");
+		}while(!ptr[count_of_libs]);
 		count_of_libs++;
        		name = dlsym(ptr[count_of_funcs], "What_i_have");
 		Name=name;
