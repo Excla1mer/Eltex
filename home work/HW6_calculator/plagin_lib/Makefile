@@ -1,12 +1,12 @@
 
 
-all: libsub.so libsum.so libmult.so libdiv.so libdraw.a 
+all: result 
 
 libsub.so: sub.c
 		gcc -fPIC sub.c -c
 		gcc -shared -o libsub.so sub.o
 libsum.so: sum.c
-		gcc -fPIC sum.c -c
+		gcc -fPIC sum.c -c -g
 		gcc -shared -o libsum.so sum.o
 libmult.so: mult.c
 		gcc -fPIC mult.c -c
@@ -18,7 +18,9 @@ libdraw.a: draw.c
 		gcc draw.c -c
 		ar rc libdraw.a draw.o
 
-result: main.c libdraw.a
-		gcc main.c -o result -L. -ldraw
+result: main.c draw.c
+		gcc main.c -c -g
+		gcc draw.c -c -g
+		gcc main.o draw.o -o result -ldl -Wl,-rpath,. 
 clean:
 		rm *.o result *.a *.so

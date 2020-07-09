@@ -1,13 +1,12 @@
 #include "header.h"
 
-void draw(float Result) {
+void draw(float Result, char funcs[10][20], int count_of_funcs) {
 	printf("---------------------\n");
-        printf("|  [1] +            |\n");
-        printf("|  [2] -            |\n");
-        printf("|  [3] *            |\n");
-        printf("|  [4] /            |\n");
-        printf("|  [5] Reset        |\n");
-        printf("|  [6] Exit         |\n");
+	for(int i = 0; i < count_of_funcs; i++) {
+		printf("|  [%d] %-12s |\n", i, funcs[i]);
+	}
+	printf("|  [%d] RESET        |\n", count_of_funcs);
+	printf("|  [%d] EXIT         |\n", count_of_funcs + 1);
         printf("---------------------\n");
         printf("|Result|%-12.2f|\n", Result);
        	printf("---------------------\n");

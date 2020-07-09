@@ -3,8 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <dlfcn.h>
-void draw(float Result);
+void draw(float Result, char funcs[10][20], int count_of_funsc);
 
 float sum(float Result);
 float sub(float Result);
