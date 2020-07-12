@@ -2,6 +2,7 @@
 #define _HEADER_H_
 
 #include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -13,7 +14,7 @@
 #include <stdlib.h> 
 #include <curses.h> 
 
-void draw_wind();
+void draw_wind(int x);
 
 struct winsize size; 
 
