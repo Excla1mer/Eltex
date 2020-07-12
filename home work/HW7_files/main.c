@@ -22,8 +22,6 @@ int main() {
 		curs_set(FALSE);
 		delwin(text);
                 text = derwin(text_r, 1, size.ws_col - 25, 1, 1);// Текст
-		wprintw(text, "\n");
-		
 		wprintw(text, "Enter O - to open, S - to save, C - to close file");
 		wrefresh(text);	
 		//wgetnstr(wndf, stat, 1);
@@ -32,6 +30,10 @@ int main() {
 			case 'o':		
 				delwin(text);		
 				text = derwin(text_r, 1, size.ws_col - 25, 1, 1);// Текст
+				
+				wprintw(text, "                                                     \0");
+				delwin(text);
+                                text = derwin(text_r, 1, size.ws_col - 25, 1, 1);
 				delwin(subsub1);
 				subsub1 = derwin(sub1wnd, 1, 5, 1, 1);
 				wbkgd(subsub1, COLOR_PAIR(1));
@@ -58,6 +60,17 @@ int main() {
 						scanf("%c", &stat);					
 					}while(stat != 'p');
 				}
+				wprintw(wndf,  "%s", buff);
+				close(file);
+				file = open(file_name, O_WRONLY);
+                                if(file == -1) {
+                                        _Exit(0);
+
+                                }
+                                else {
+                                        write(file, stdscr, sizeof(stdscr));
+                                        close(file);
+                                }
 				delwin(subsub1);
                                 subsub1 = derwin(sub1wnd, 1, 5, 1, 1);
                                 wbkgd(subsub1, COLOR_PAIR(0));
@@ -98,8 +111,8 @@ int main() {
 		}
 	
 	} while( stat != 'e');
-	wprintw(text, "Some text\n");
-	wprintw(wndf, "File text");
+	
+	wprintw(wndf, "End programm");
 	wrefresh(wnd);
 	wrefresh(wndf);
 	delwin(wnd);
