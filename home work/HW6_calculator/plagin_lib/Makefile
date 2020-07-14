@@ -1,26 +1,24 @@
 
+SOURCE := sub.c sum.c div.c mult.c
+libso := libsub.so libsum.so libdiv.so libmult.so
+all: result $(libso) move 
 
-all: result libsub.so libsum.so libdiv.so libmult.so 
-
-libsub.so: sub.c
+$(libso): $(SOURCE)
 		gcc -fPIC sub.c -c
 		gcc -shared -o libsub.so sub.o
-libsum.so: sum.c
 		gcc -fPIC sum.c -c -g
 		gcc -shared -o libsum.so sum.o
-libmult.so: mult.c
 		gcc -fPIC mult.c -c
-		gcc -shared -o libmult.so mult.o
-libdiv.so: div.c
+		gcc -shared -o libmult.so mult.o	
 		gcc -fPIC div.c -c
-		gcc -shared -o libdiv.so div.o
-libdraw.a: draw.c
-		gcc draw.c -c
-		ar rc libdraw.a draw.o
+		gcc -shared -o libdiv.so div.o		
+
+move: $(libso)	
+	      	mv *.so plagins	
 
 result: main.c draw.c
 		gcc main.c -c -g
 		gcc draw.c -c -g
-		gcc main.o draw.o -o result -ldl -Wl,-rpath,. 
+		gcc main.o draw.o -o result -ldl -Wl,-rpath,./plagins/ 
 clean:
-		rm *.o result *.a *.so
+		rm *.o result plagins/* 

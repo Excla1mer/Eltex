@@ -1,8 +1,9 @@
 #include "header.h"
 
-char What_i_have() {
+char What_i_have(char *name[255]) {
         char return_name[255] = {'m','y','_','d','i','v'}; // Строка содержащая названия всех функций библиотеки
-        return Draw(return_name);
+        strcpy(name, return_name);
+	//return Draw(return_name);
 }
 void Draw(char *return_name) {
         printf("------------------\n");

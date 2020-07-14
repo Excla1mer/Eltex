@@ -1,8 +1,10 @@
 #include "header.h"
 
-char What_i_have() {
+char What_i_have(char *name[255]) {
         char return_name[255] = {'s','u','b'};
-        return Draw(return_name);
+        strcpy(name, return_name);
+
+	//return Draw(return_name);
 }
 void Draw(char *return_name) {
         printf("------------------\n");
