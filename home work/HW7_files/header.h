@@ -19,8 +19,7 @@ void draw_wind(int x);
 struct winsize size; 
 
 
-
-WINDOW * wnd;    
+/*WINDOW * wnd;    
 WINDOW * sub1wnd;    
 WINDOW * subsub1;
 WINDOW * sub2wnd;
@@ -32,7 +31,7 @@ WINDOW * wndd;
 WINDOW * wndf_r;
 WINDOW * wndf;
 WINDOW * text_r;
-WINDOW * text;
+WINDOW * text;*/
 
 
 #endif
