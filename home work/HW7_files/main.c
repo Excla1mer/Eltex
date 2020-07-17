@@ -2,130 +2,235 @@
 
 void sig_winch(int signo) {    
 	ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);    
-	resizeterm(size.ws_row, size.ws_col); 
-	
+	resizeterm(size.ws_row, size.ws_col); 	
 }
 
+char open_file(char *file_name, struct winsize size) {
+	int file;
+	file = open(file_name, O_CREAT, O_RDWR);
+	char buff[81];
+	if(file == -1){
+		printw("File wrong");
+	}
+	else {
+		move(0, 0);
+		for(int i = 0; i < size.ws_row - 2; i++) {
+			memset(buff, 0 , 81);
+			read(file, buff, 80);
+			move(i, 0);
+			printw("%s", buff);
+		}
+		move(size.ws_row - 1, 0);
+		printw("file '%s' is opened! Press 'esc' to exit", file_name);
+	}
+	close(file);
+}
+
+/*char write_file(char *file_name, chtype *buff, int size) {
+	int file;
+	static int t;
+	file = open(file_name, O_WRONLY);
+	int chek;
+	if(file == -1){
+		printf("File wrong");
+	}
+	else {
+		for(int i = 0; i < 80; i++) {
+			chek = write(file, &buff[i], 1);
+		}
+		if(chek == -1) {
+			move(10,10);
+			printf("Error of input to file");
+			getch();
+		}
+		
+	}
+	if(t == size)
+	{
+		close(file);
+		t = 0;
+	}
+	t++;
+}*/
+
+void  draw_input(char *file_name, struct winsize size) {
+
+	move(size.ws_row - 1, 0);
+	printw("Input file name: ");	
+	refresh();
+	nocbreak();
+	echo();
+	wgetnstr(stdscr, file_name, 30);
+	move(size.ws_row - 1, 0);
+	printw("                                                  \0");
+	move(size.ws_row - 1, 0);
+}
+
+int start_draw(struct winsize size)  {
+	int t;
+	cbreak;
+	curs_set(FALSE);
+	move(size.ws_row - 1, 0);
+	printw("To open file click - f1 | To save file click - f2 | To close programm click - f3");
+	move(size.ws_row - 1, 0);
+	t = getch();
+	printw("                                                                                                                       \0");	
+	refresh();	
+	return t;
+}
 
 int main() {
-
-	int file = -1;
-	char buff[255];
-	char file_name[255];
-	char stat;
-	initscr();    
-	signal(SIGWINCH, sig_winch);
-	draw_wind(0);
-	wrefresh(wnd);	
-	do {
-		cbreak();
+	int file = 0;
+	char file_name[30];
+	chtype *str;
+	int symb;
+	int chek;
+	bool ex =  false;
+ 	str = calloc(80, sizeof(chtype));
+	initscr();
+  	keypad(stdscr, true);
+	while(1) {
+  		signal(SIGWINCH, sig_winch);	
 		curs_set(FALSE);
-		delwin(text);
-                text = derwin(text_r, 1, size.ws_col - 25, 1, 1);// Текст
-		wprintw(text, "Enter O - to open, S - to save, C - to close file");
-		wrefresh(text);	
-		//wgetnstr(wndf, stat, 1);
-		scanf("%c", &stat);
-		switch(stat) {
-			case 'o':		
-				delwin(text);		
-				text = derwin(text_r, 1, size.ws_col - 25, 1, 1);// Текст
-				
-				wprintw(text, "                                                     \0");
-				delwin(text);
-                                text = derwin(text_r, 1, size.ws_col - 25, 1, 1);
-				delwin(subsub1);
-				subsub1 = derwin(sub1wnd, 1, 5, 1, 1);
-				wbkgd(subsub1, COLOR_PAIR(1));
-				wprintw(subsub1 ,"Open");
-				wrefresh(subsub1);
-				wprintw(text, "Enter file  name :");
-				nocbreak();
-				wrefresh(wndf);
-				wgetnstr(text, file_name, 255);
-				file = open(file_name, O_RDWR | O_CREAT);
-				if(file  == -1) {
-					wprintw(wndf, "Error of file");
-					refresh();
-				}
-				else {
-							
-					read(file, buff, sizeof(buff));
-					wprintw(wndf, "%s", buff);
-					wrefresh(wndf);
-					move(1,1);
-					curs_set(TRUE);
-					do {
-						wgetnstr(wndf, buff, 224);
-						scanf("%c", &stat);					
-					}while(stat != 'p');
-				}
-				wprintw(wndf,  "%s", buff);
-				close(file);
-				file = open(file_name, O_WRONLY);
-                                if(file == -1) {
-                                        _Exit(0);
+		start_color();
+		cbreak();
+		refresh();
+		noecho();
+		ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);
+		switch(start_draw(size)) {
+			case KEY_F(1):	
+				ex = false;
+				curs_set(TRUE);
+				start_color();
+				draw_input(file_name, size);
+				open_file(file_name, size);
+				int x = 0;
+				int y = 0;
+				move(x, y);
+				cbreak();
+				noecho();
+  				keypad(stdscr, true);
+				refresh();
+				do {
+					symb = getch();
+					switch(symb) {
+						case KEY_UP:
+							if(x > 0)
+								x--;
+							move(x, y);
+							break;
+						case KEY_DOWN:
+							if(x < (size.ws_row - 1))
+								x++;
+						       	move(x, y);	
+							break;
+						case KEY_LEFT:
+							if(y > 0)
+								y--;
+							move(x, y);
+							break;
+						case KEY_RIGHT:
+							if(y < (size.ws_col - 1))
+								y++;
+							move(x, y);
+							break;
+						case 27: // Esc
+							ex = true;
+							break;
+						case KEY_BACKSPACE:
+							if(y == 0) {
+								move(size.ws_row - 1, 0);
+								printw("                                                                     \0");
 
-                                }
-                                else {
-                                        write(file, stdscr, sizeof(stdscr));
-                                        close(file);
-                                }
-				delwin(subsub1);
-                                subsub1 = derwin(sub1wnd, 1, 5, 1, 1);
-                                wbkgd(subsub1, COLOR_PAIR(0));
-                                wprintw(subsub1 ,"Open ");
-                                wrefresh(subsub1);
+								move(size.ws_row - 1 , size.ws_col/2);
+								printw("                             \0");
+								move(x, y);
+								deleteln();
+								x--;
+								move(size.ws_row - 1, 0);
+								printw("file '%s' is opened! Press 'esc' to exit", file_name);
+								move(x, 80);
+							}
+							else {
+								y--;
+								move(x, y);
+								delch();// функция удаляет симовол на котором стоит коретка
+							}
+							move(x, y);
+							break;
+						case 10:
+							move(size.ws_row - 1, 0);
+							printw("                                                                  \0");
+							x++;
+							move(x, 0);
+							insdelln(1); // Функция сдвигает текст вниз и добовляет пустую строку
+							move(size.ws_row - 1, 0);
+							printw("file '%s' is opened! Press 'esc' to exit", file_name);
+							move(x, y);
+							break;
+						default :
+							insch(symb);// ввод обычных символов
+							y++;
+							move(x, y);
+							break;
+					}
+					move(size.ws_row - 1 , size.ws_col/2);
+					printw("                             \0");
+					move(size.ws_row - 1 , size.ws_col/2);
+					printw("(%d, %d)", x, y);
+					move(x, y);
+					refresh();
+				} while( !ex );			
 				break;
-			case 's':
-				close(file);	
-				delwin(subsub2);
-                                subsub2 = derwin(sub2wnd, 1, 5, 1, 1);
-                                wbkgd(subsub2, COLOR_PAIR(1));
-                                wprintw(subsub2 ,"Save");
-                                wrefresh(subsub2);
+			case KEY_F(2):// Сохранение настроек 
+				x = 0;
+				y = 0;
+				move(size.ws_row - 1, 0);
+				printw("                                                  \0");
 				file = open(file_name, O_WRONLY);
-				if(file == -1) {
-					_Exit(0);
 				
+				if(file == -1){
+					printf("File wrong");
 				}
 				else {
-					write(file, stdscr, sizeof(stdscr));
+				
+					for(int s = 0; s < size.ws_row - 2; s++)
+					{
+						mvinchnstr(s, 0, str, 79);// Считывание s строки из 79 символов в буффер str
+						for(int i = 0; i < 80; i++) {
+							chek = write(file, &str[i], 1);
+							if(chek == -1) {
+								move(10,10);
+								printf("Error of input to file");
+								getch();
+							}
+						}
+					}
 					close(file);
 				}
-				/*delwin(subsub2);
-                                subsub2 = derwin(sub2wnd, 1, 5, 1, 1);
-                                wbkgd(subsub2, COLOR_PAIR(0));
-                                wprintw(subsub2 ,"Save ");
-                                wrefresh(subsub2);*/
-
+				move(size.ws_row - 1, 0);
+				printw("file %s saved", file_name);
+				getch();
+				// Очищаю экран 
+				for(int i = 0; i < size.ws_row - 2; i++) {
+					move(i, 0);
+					printw("                                                                                               \0");
+				}
+				refresh();
 				break;
-			case 'c': 
-				break;
-			case 'e':
+			case KEY_F(3):
+				endwin();
+				free(str);
+				_Exit(0);
 				break;
 			default :
+				printw("Input error");	
 				break;
-
-		
 		}
-	
-	} while( stat != 'e');
-	
-	wprintw(wndf, "End programm");
-	wrefresh(wnd);
-	wrefresh(wndf);
-	delwin(wnd);
+
+	}
 	getch();
 	endwin();
 	exit(EXIT_SUCCESS);
-	//file = open("file.txt", O_RDWR | O_CREAT);
-	//printf("Enter word: ");
-	//scanf("%s", &buff);
-	//write(file, buff, sizeof(buff));
-	//close(file);
-	//file = open("file.txt", O_RDONLY);
-	//read(file, buff, sizeof(buff));
-	//printf("%s", buff);
 	return 0;
 }
