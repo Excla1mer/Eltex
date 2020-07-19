@@ -13,8 +13,13 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <curses.h>
+// ***libs*for*processes******
+// #include <stdio.h>
+// #include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <errno.h>  
 // ***************************
-
 struct winsize size;
 
 WINDOW* wnd_l;

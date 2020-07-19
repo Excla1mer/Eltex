@@ -7,7 +7,7 @@ void sig_winch(int signo) {
 
 void boxes(struct winsize size, char *path_l, char *path_r) {
 	wnd_l = newwin(size.ws_row, size.ws_col / 2, 0, 0);
-	wnd_r = newwin(size.ws_row, size.ws_col / 2, 0, (size.ws_col / 2) + 1);
+	wnd_r = newwin(size.ws_row, size.ws_col / 2, 0, (size.ws_col / 2));
 	box(wnd_l, '|', '-');
 	box(wnd_r, '|', '-');
 	wmove(wnd_l ,0, 2);
@@ -75,8 +75,12 @@ int main() {
 	int l, r;
 	int symb;
 	int x, y;
-	char path_l[255] = "/home/sergey/Eltex/home work/HW8_dirs";
-	char path_r[255] = "/home/sergey/Eltex/home work/HW8_dirs";
+	pid_t pid;
+	char *path_l;
+	//char *path_r;
+	char path_r[255] = "/";
+	path_l = getenv("PWD");
+	//path_r = getenv("PWD");
 	l = scandir(path_l, &buff_l, NULL, alphasort);
 	r = scandir(path_r, &buff_r, NULL, alphasort);
 	initscr();
@@ -128,6 +132,44 @@ int main() {
 				    		strncat(path_l, buff_l[x]->d_name,  50);	
 					}
 					l = scandir(path_l, &buff_l, NULL, alphasort);
+					if(l == -1) {
+						pid = fork();
+						if(pid == 0){
+							delwin(wnd_l);
+							delwin(wnd_r);
+							endwin();
+							system("clear");
+							execl(path_l, NULL);
+							getch();
+							return 0;
+						}
+						else {
+							wait(NULL);
+							initscr();
+							signal(SIGWINCH, sig_winch);
+        						start_color();
+        						curs_set(FALSE);
+							boxes(size, path_l, path_r);
+							print_dirs(buff_l, l, buff_r, r, x, y);
+							keypad(stdscr, true);
+       						keypad(wnd_r, true);
+        						keypad(wnd_l, true);
+        						refresh();
+							wrefresh(wnd_l);
+							wrefresh(wnd_r);
+							len = strlen(path_l);
+							for(int i = len; i >= 0; i--) {
+                                                        	if(path_l[i] == '/') {
+                                                                	path_l[i] = '\0';
+                                                               	 	break;
+                                                        	}
+                                                	}
+							l = scandir(path_l, &buff_l, NULL, alphasort);
+
+						}
+					
+					}
+
 				}
 				else {
 					int chek;
@@ -146,9 +188,50 @@ int main() {
                                                 strncat(path_r, buff_r[x]->d_name,  50);
                                         }
                                         r = scandir(path_r, &buff_r, NULL, alphasort);
+                                        if(r == -1) {
+						pid = fork();
+						if(pid == 0){
+							delwin(wnd_r);
+							delwin(wnd_l);
+							endwin();
+							system("clear");
+							execl(path_r, NULL);
+							getch();
+							return 0;
+						}
+						else {
+							wait(NULL);
+							initscr();
+							signal(SIGWINCH, sig_winch);
+        						start_color();
+        						curs_set(FALSE);
+							boxes(size, path_l, path_r);
+							print_dirs(buff_l, l, buff_r, r, x, y);
+							keypad(stdscr, true);
+       						keypad(wnd_r, true);
+        						keypad(wnd_l, true);
+        						refresh();
+							wrefresh(wnd_l);
+							wrefresh(wnd_r);
+							len = strlen(path_r);
+							for(int i = len; i >= 0; i--) {
+                                                        	if(path_r[i] == '/') {
+                                                                	path_r[i] = '\0';
+                                                               	 	break;
+                                                        	}
+                                                	}
+							r = scandir(path_r, &buff_r, NULL, alphasort);
+
+						}
+					
+					}
+
 
 				
 				}
+				refresh();
+				wrefresh(wnd_l);
+				wrefresh(wnd_r);
 				x = 1;
 				break;
 			case  27:
@@ -160,6 +243,11 @@ int main() {
 				free(buff_l);
 				_Exit(0);
 		}
+
+			refresh();
+			wrefresh(wnd_l);
+			wrefresh(wnd_r);
+
 
 	}
 	return 0;
