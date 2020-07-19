@@ -22,6 +22,9 @@
 // ***************************
 struct winsize size;
 
+void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int x, int y);
+void boxes(struct winsize size, char *path_l, char *path_r);
+
 WINDOW* wnd_l;
 WINDOW* wnd_r;
 

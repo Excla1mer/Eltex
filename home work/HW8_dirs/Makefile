@@ -4,7 +4,8 @@ BIN := result
 all: $(BIN)
 
 $(BIN):  $(SOURCE)
-		gcc $(SOURCE) -o $(BIN) -g -lncurses
+		gcc $(SOURCE) -c 
+	      	gcc *.o -o $(BIN) -g -lncurses
 clear:
-		rm $(BIN)
+		rm $(BIN) *.o
 		
