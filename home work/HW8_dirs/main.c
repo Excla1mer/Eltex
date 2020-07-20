@@ -7,19 +7,18 @@ void sig_winch(int signo) {
 
                              
 int main() {
-	struct dirent **buff_l;
-	struct dirent **buff_r;
-	int l, r;
-	int symb;
-	int x, y;
+	struct dirent **buff_l; // Хранит в себе имена файлов в директории для левого окна 
+	struct dirent **buff_r; // --н-- для правого окна 
+	int l, r; // Переменные для хранения количества файлов в директории
+	int symb; // Символ для отслеживания нажатий 
+	int x, y; // Положение курсора на экране {x строка / y = 0 левое окно/ y = 1 правое окно}
 	pid_t pid;
-	char *path_l;
-	//char *path_r;
-	char path_r[255];
-	path_l = getenv("PWD");
-	strcpy(path_r, path_l);
-	//path_r = getenv("PWD");
-	l = scandir(path_l, &buff_l, NULL, alphasort);
+	char *path_l; // Путь до директории левого окна
+	char path_r[255]; // Путь до директории парвого окна
+	path_l = getenv("PWD"); // Записываем путь до директории откуда запуткадся бинарник
+	strcpy(path_r, path_l); // Копируем в путь левого окна
+	l = scandir(path_l, &buff_l, NULL, alphasort); 	// Записываем названия файлов текущей директории в буфер (buff_l), 
+							// а так-же количество файлов в этой директории в l
 	r = scandir(path_r, &buff_r, NULL, alphasort);
 	initscr();
 	keypad(stdscr, true);
@@ -35,9 +34,9 @@ int main() {
 		curs_set(FALSE);
 		cbreak();
 		noecho();
-		ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);
-		boxes(size, path_l, path_r);
-		print_dirs(buff_l, l, buff_r, r, x, y);
+		ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size); // Получаем размер окна
+		boxes(size, path_l, path_r); // Рисуем рамки окон и выводим буть текущей директории
+		print_dirs(buff_l, l, buff_r, r, x, y); // Выводим содержимое директорий 
 		symb = getch();
 		switch(symb) {
 			case KEY_UP:
@@ -50,30 +49,31 @@ int main() {
 				if(y == 1 && x < r - 1)
 					x++;
 				break;
-			case KEY_BTAB:
+			case KEY_BTAB: // shift + tab
 				if(y == 0) 	y++;
 				else 		y  = 0;
 				x = 1;
 				break;
-			case 10:
+			case 10: // enter
 				if(y == 0) {
 					int chek;
-					int len = strlen(path_l);
+					int len = strlen(path_l); // Количество символов в строке пути
 					chek = strcmp(buff_l[x]->d_name, "..");
-					if(chek == 0) {
-						for(int i = len; i >= 0; i--) {
+					if(chek == 0) { // Если нажали на ..
+						// Поднимаюсь на директорию выше
+						for(int i = len; i >= 0; i--) { 
 							if(path_l[i] == '/') {
 								path_l[i] = '\0';
 								break;
 							}
 						}
 					}
-					else {
+					else {// Дописываю путь до директории 
 						strncat(path_l,  "/", 1);
 				    		strncat(path_l, buff_l[x]->d_name,  50);	
 					}
-					l = scandir(path_l, &buff_l, NULL, alphasort);
-					if(l == -1) {
+					l = scandir(path_l, &buff_l, NULL, alphasort); 
+					if(l == -1) { // Проверка если это директория -1 говорит что это не директория 
 						pid = fork();
 						if(pid == 0){
 							delwin(wnd_l);
@@ -81,7 +81,7 @@ int main() {
 							endwin();
 							system("clear");
 							execl(path_l, NULL);
-							getch();
+							//getch();
 							return 0;
 						}
 						else {
@@ -165,23 +165,23 @@ int main() {
 
 						}
 					
-					}
-
-
-				
+					}	
 				}
 				refresh();
 				wrefresh(wnd_l);
 				wrefresh(wnd_r);
 				x = 1;
 				break;
-			case  27:
+			case  27: // Esc
 				echo();
-				system("clear");
 				curs_set(TRUE);
 				nocbreak;
 				free(buff_r);
 				free(buff_l);
+				delwin(wnd_r);
+                                delwin(wnd_l);
+                                endwin();
+				system("clear");
 				_Exit(0);
 		}
 

@@ -24,13 +24,13 @@ void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int
 			{
 				wattron(wnd_l, COLOR_PAIR(2));
 				wmove(wnd_l, i, 1 );
-        	        	wprintw(wnd_l, "%-30s", buff_l[i]->d_name);
+        	        	wprintw(wnd_l, "%-50s", buff_l[i]->d_name);
 				
 			}
 			else {
 				wattron(wnd_l, COLOR_PAIR(1));
 				wmove(wnd_l, i, 1 );
-        	        	wprintw(wnd_l, "%-30s", buff_l[i]->d_name);
+        	        	wprintw(wnd_l, "%-50s", buff_l[i]->d_name);
 				
 			}
 		}
@@ -45,13 +45,13 @@ void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int
                         {
                                 wattron(wnd_r, COLOR_PAIR(2));
                                 wmove(wnd_r, i, 1 );
-                                wprintw(wnd_r, "%-30s", buff_r[i]->d_name);
+                                wprintw(wnd_r, "%-50s", buff_r[i]->d_name);
 
                         }
                         else {
                                 wattron(wnd_r, COLOR_PAIR(1));
                                 wmove(wnd_r, i, 1 );
-                                wprintw(wnd_r, "%-30s", buff_r[i]->d_name);
+                                wprintw(wnd_r, "%-50s", buff_r[i]->d_name);
 
                         }
                 }
