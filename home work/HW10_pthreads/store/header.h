@@ -9,6 +9,7 @@
 int store[5];
 
 void *customer(void *param);
+void *customer_key();
 void *worker(void *param);
 
 #endif
