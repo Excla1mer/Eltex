@@ -5,7 +5,7 @@ void *func(void *param) {
 	long tmp;
 	long *ptr;
 	ptr = (long *)param;
-	for(long j = 0; j < 10000000; j++) {
+	for(long j = 0; j < 1000000; j++) {
 		pthread_mutex_lock(&mut);
 		//tmp = *ptr;
 		//tmp++;
@@ -18,10 +18,10 @@ void *func(void *param) {
 
 int main() {
 	pthread_t tid[500];
-	for(int i = 0; i < 500; i++) {
+	for(int i = 0; i < 50; i++) {
 		pthread_create(&tid[i], NULL, func, &sum);
 	}
-	for(int i = 0; i < 500; i++) {
+	for(int i = 0; i < 50; i++) {
 		pthread_join(tid[i], NULL);
 	}
 	printf("%ld\n", sum);
