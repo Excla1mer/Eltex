@@ -13,13 +13,16 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <curses.h>
-// ***libs*for*processes******
+// ***libs for processes******
 // #include <stdio.h>
 // #include <sys/types.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>  
-// ***************************
+// ***libs for stat***********
+#include <fcntl.h>           
+#include <sys/stat.h>
+
 struct winsize size;
 
 void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int x, int y);
