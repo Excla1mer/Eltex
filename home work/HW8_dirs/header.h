@@ -22,14 +22,19 @@
 // ***libs for stat***********
 #include <fcntl.h>           
 #include <sys/stat.h>
+#include <pthread.h>
+
 
 struct winsize size;
 
 void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int x, int y);
 void boxes(struct winsize size, char *path_l, char *path_r);
+void *dr_copy(void *param);
 
 WINDOW* wnd_l;
 WINDOW* wnd_r;
+WINDOW* wnd_c;
 
+long long file_size;
 
 #endif

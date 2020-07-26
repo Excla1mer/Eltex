@@ -67,4 +67,47 @@ void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int
 
 }
 
+void *dr_copy(void *param) {
+	long long *wr_file;
+	wr_file = (long long *)param;
+	wnd_c = newwin(4, 54, size.ws_row - 5, size.ws_row / 1.1);
+	box(wnd_c, '|', '-');
+	wattron(wnd_c, COLOR_PAIR(3));
+	wmove(wnd_c, 2, 1);
+	wprintw(wnd_c,  "[");
+	wmove(wnd_c, 2, 52);
+	wprintw(wnd_c,  "]");
+	int x = 2;
+	int y = 2;
+	float  t = 0.02;
+	
+	while(1) {
+		wmove(wnd_c, 1 , 25);
+		wprintw(wnd_c,"%0.2f%%", (*wr_file*1.0)/(file_size*1.0) * 100);
+		wmove(wnd_c, x, y);
+		if((*wr_file*1.0)/(file_size*1.0) >= t) {
+			wprintw(wnd_c,  "#");
+			delch();
+			t = t + 0.02;
+			y++;
+			
+		}
+		if( *wr_file == file_size) {
+			wmove(wnd_c, 1, 25);	
+			wprintw(wnd_c, "  DONE  ");
+			refresh();
+			wrefresh(wnd_l);
+			wrefresh(wnd_r);
+			wrefresh(wnd_c);
+			getch();
+			break;	
+		}
+		refresh();
+		wrefresh(wnd_l);
+		wrefresh(wnd_r);
+		wrefresh(wnd_c);
+		usleep(1000);
+	}
+}
+
 

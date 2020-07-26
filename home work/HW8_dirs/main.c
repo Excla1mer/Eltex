@@ -4,23 +4,25 @@ void sig_winch(int signo) {
         ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);
         resizeterm(size.ws_row, size.ws_col);
 }
-
                              
 int main() {
 	struct dirent **buff_l; // Хранит в себе имена файлов в директории для левого окна 
 	struct dirent **buff_r; // --н-- для правого окна 
+	struct stat sb; // Структура для понимания типа файла
+	pid_t pid;
+	pthread_t tid;
 	int l, r; // Переменные для хранения количества файлов в директории
 	int symb; // Символ для отслеживания нажатий 
 	int x, y; // Положение курсора на экране {x строка / y = 0 левое окно/ y = 1 правое окно}
-	pid_t pid;
 	int copy = 0;
 	int file1, file2;
-	char copy_buff;
+	int chek;
 	int len; // отвечает за количество символов в пути
+	long long wr_file;
 	char *path_l; // Путь до директории левого окна
 	char path_r[255]; // Путь до директории парвого окна
 	char copy_path[255];
-	struct stat sb; 	// Структура для понимания типа файла
+	char copy_buff;	
 	path_l = getenv("PWD"); // Записываем путь до директории откуда запуткадся бинарник
 	strcpy(path_r, path_l); // Копируем в путь левого окна
 	l = scandir(path_l, &buff_l, NULL, alphasort); 	// Записываем названия файлов текущей директории в буфер (buff_l), 
@@ -34,6 +36,7 @@ int main() {
 	start_color();
 	init_pair(1, COLOR_BLUE, COLOR_GREEN);
         init_pair(2, COLOR_YELLOW, COLOR_BLUE);
+        init_pair(3, COLOR_RED, COLOR_BLUE);
 	x = 1;
 	y = 0;
 	while(1) {
@@ -62,8 +65,7 @@ int main() {
 				break;
 			case 10: // enter
 				if(y == 0) {
-					int chek;
-					int len = strlen(path_l); // Количество символов в строке пути
+					len = strlen(path_l); // Количество символов в строке пути
 					chek = strcmp(buff_l[x]->d_name, "..");
 					if(chek == 0) { // Если нажали на ..
 						// Поднимаюсь на директорию выше
@@ -81,40 +83,38 @@ int main() {
 					}
 					
 					/* Если надо будет понять что за файл мы пытаемся открыть*/
-					/*if (lstat(path_l, &sb) == -1) {
+					if (lstat(path_l, &sb) == -1) {
                					perror("lstat");
                					exit(EXIT_FAILURE);
-           					}
-					wmove(wnd_l, 30, 0);
-					switch(sb.st_mode & S_IFMT) {
-           					case S_IFBLK:  wprintw(wnd_l,"block device\n");     	break;
-           					case S_IFCHR:  wprintw(wnd_l, "character device\n");	break;
-           					case S_IFDIR:  wprintw(wnd_l, "directory\n");  	break;
-           					case S_IFIFO:  wprintw(wnd_l,"FIFO/pipe\n");      	break;
-           					case S_IFLNK:  wprintw(wnd_l,"symlink\n");          	break;
-           					case S_IFREG:  wprintw(wnd_l,"regular file\n");     	break;
-           					case S_IFSOCK: wprintw(wnd_l,"socket\n");           	break;
-           					default:       wprintw(wnd_l,"unknown?\n");         	break;
            				}
-           				refresh();
-					wrefresh(wnd_l);
-					wrefresh(wnd_r);*/
+           				file_size = sb.st_size;
 					l = scandir(path_l, &buff_l, NULL, alphasort); 
 					if(l == -1) { // Проверка если это директория. -1 говорит что это не директория 
 						if(copy == 1) {
+							// Создаю поток для отображения 
+							// полосы прогресса копирования файла. wr_file = байт скопировано
+							pthread_create(&tid, NULL, dr_copy, &wr_file);
 							file1 = open(path_l, O_RDONLY);
-							strncat(copy_path, path_r,  50);
+							strncat(copy_path, path_r,  100);
 							strncat(copy_path, "/", 1);
-							strncat(copy_path, buff_l[x]->d_name,  50);
+							strncat(copy_path, buff_l[x]->d_name,  100);
 							close(creat(copy_path, 0664));
 							file2 = open(copy_path, O_RDWR | O_CREAT | O_TRUNC);
+							// копирую файл побайтно
 							while(read(file1, &copy_buff, sizeof(copy_buff)) > 0) { 
-								write(file2, &copy_buff, sizeof(copy_buff));	
+								write(file2, &copy_buff, sizeof(copy_buff));
+								wr_file++;
+								usleep(1000);	// искусственно замедляю процесс копирования 
+										// для отображения результата копирования
 							}
+							pthread_join(tid, NULL);
 							close(file1);
 							close(file2);
 							memset(copy_path, 0, sizeof(copy_path));
 							copy = 0;
+							wr_file =  0;
+							init_pair(1, COLOR_BLUE, COLOR_GREEN);
+							init_pair(2, COLOR_YELLOW, COLOR_BLUE); 
 							len = strlen(path_l); // Количество символов в строке пути
 							for(int i = len; i >= 0; i--) {
 		                                            	if(path_l[i] == '/') {
@@ -132,8 +132,6 @@ int main() {
 								endwin();
 								system("clear");
 								execl(path_l, NULL);
-								//getch();
-								return 0;
 							}
 							else {
 								wait(NULL);
@@ -166,7 +164,7 @@ int main() {
 				}
 				else {
 					int chek;
-                                        int len = strlen(path_r);
+  	                           	int len = strlen(path_r);
                                         chek = strcmp(buff_r[x]->d_name, "..");
                                         if(chek == 0) {
                                                 for(int i = len; i >= 0; i--) {
@@ -225,7 +223,15 @@ int main() {
 				x = 1;
 				break;
 			case 'c':
-				copy = 1;
+				if(copy == 0) {
+					copy = 1;
+					init_pair(2, COLOR_BLUE, COLOR_GREEN);
+					init_pair(1, COLOR_YELLOW, COLOR_BLUE);
+				} else  {
+					copy = 0;
+					init_pair(1, COLOR_BLUE, COLOR_GREEN);
+					init_pair(2, COLOR_YELLOW, COLOR_BLUE); 
+				}
 				break;
 			case  27: // Esc
 				echo();
