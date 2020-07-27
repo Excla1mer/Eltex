@@ -70,7 +70,7 @@ void print_dirs(struct dirent **buff_l, int l,struct dirent **buff_r, int r, int
 void *dr_copy(void *param) {
 	long long *wr_file;
 	wr_file = (long long *)param;
-	wnd_c = newwin(4, 54, size.ws_row - 5, size.ws_row / 1.1);
+	wnd_c = newwin(4, 54, size.ws_row - 5, (size.ws_col / 3.5) + 2);
 	box(wnd_c, '|', '-');
 	wattron(wnd_c, COLOR_PAIR(3));
 	wmove(wnd_c, 2, 1);
