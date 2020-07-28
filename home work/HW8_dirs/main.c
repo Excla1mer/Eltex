@@ -163,8 +163,7 @@ int main() {
 
 				}
 				else {
-					int chek;
-  	                           	int len = strlen(path_r);
+  	                          	len = strlen(path_r);
                                         chek = strcmp(buff_r[x]->d_name, "..");
                                         if(chek == 0) {
                                                 for(int i = len; i >= 0; i--) {
