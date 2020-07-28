@@ -1,51 +1,63 @@
 #include "header.h"
 
-int main(int argc, char * argv[]) {
-	int pipefd[2];
+#define NAME "/tmp/buff.txt"
+
+int main() {
+	int fifo_fd;
 	pid_t pid;
-	char str[255] = "Hello world!";
+	char buff[1024];
+	char str[80]; 
+	char *args[40];
+	char *run[20]; 
 	char *path;
-	path = getenv("PWD");
-	//strncat(path, "/main.c", 10);
-	char *const parmList[] = {path, "header.h", NULL};
-     	char *const envParms[2] = {NULL, NULL};
-	if(pipe(pipefd) == -1) {
-		perror("pipe");
-		exit(EXIT_FAILURE);
-	}
-	int tmp;
-	tmp = dup(STDOUT_FILENO);
-	/*printf("%d\n", STDOUT_FILENO);
-	printf("%d\n", pipefd[1]);
-	dup2(pipefd[1], STDOUT_FILENO);*/
-//	write(tmp, STDOUT_FILENO, sizeof(int));
-	//printf("%d\n", STDOUT_FILENO);
-	pid = fork();
-	if(pid == -1) {
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	if(pid == 0) {
-	//	printf("Child\n");
-		execve("/bin/cat", parmList, envParms);
-		perror("EXEC");
-		//close(pipefd[1]);
-		//char str1[255];
-		//while(read(pipefd[1], str1, 255) > 0)
-			//write(STDOUT_FILENO, str1, 1);
-		//dup2(tmp, pipefd[1]);
-		//printf("C:%s\n", str1);
-		//write(STDOUT_FILENO, "\n", 1);
-		//close(pipefd[0]);
-		_exit(EXIT_SUCCESS);
-	} else {
-		//printf("Parrent\n");
-		//write(tmp, "hello\n", 6);
-		//close(pipefd[0]);
-		//write(pipefd[1], str, sizeof(str));
-		//close(pipefd[1]);
-		wait(NULL);
-		_exit(EXIT_SUCCESS);
-	
-	}
+	int i = 0;
+	int n = 0; 
+	int p = 0; // Определяет сколько комманд было записано
+	path = getenv("PWD"); 
+	mkfifo(NAME, 0666);
+	fifo_fd = open(NAME, O_RDWR);
+	do {
+		printf("%s$ ", path);
+		fgets(str, 255, stdin);
+		str[strlen(str) - 1] = '\0';
+		args[0] =  strtok(str, " ");
+		// Разбиваю строку на аргументы
+		while(args[i] != NULL) {
+			args[++i] = strtok(NULL, " ");
+		
+		}
+		/* Идем в цикле for по аргументам и смотрим если это не конец строки и
+		 * это не | , то записывам этот аргумент в run.
+		 * run хранит название комманды и его аргументы.*/
+		for(int j = 0; j <= i;  j++)  {
+			if(args[j] == NULL) {
+				if(p == 0) {
+					execvp(run[0], run);
+				} else {
+					run[n] = NAME;
+					//run[n+1] = NULL;
+					execvp(run[0], run);	
+				}
+				break;
+			}
+			/* если аргумент == | это значит, что далее последует следующая команда
+			 * и одновременно определяет, что предыдущая команда закончилась.*/
+			if(strcmp(args[j], "|") == 0) {
+				p++;
+		                pid = fork();
+		                if(pid == 0) {
+		                        run[n] = NULL;
+		                        dup2(fifo_fd, 1);
+		                        execvp(run[0], run);
+		                } else {
+		                        wait(NULL);
+					n = 0;
+
+		                }
+		        } else {
+				run[n] = args[j];
+				n++;
+			}
+		}
+	}while(1);
 }
