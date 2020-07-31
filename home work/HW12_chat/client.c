@@ -1,13 +1,18 @@
 #include "header.h"
 
+#define NAME_SINC_MSG "/sinc-msg"
 #define NAME_SIGN "/signals0"
 #define NAME_MSG "/messages1"
 
-unsigned int count_u;
-unsigned int count_m;
+unsigned int count_u; // количество юзеров в чате 
+unsigned int count_m; // количество сообщений в чате
 
 unsigned int sgn_prio_send = 2;
 unsigned int sgn_prio_receive = 1;
+unsigned int sgn_prio_sinc_msg_send = 4; // приоритет для синхронизации сообщений 
+unsigned int sgn_prio_sinc_msg_receive = 3; // приоритет для синхронизации сообщений 
+unsigned int sgn_prio_sinc_names = 5; // приоритет для синхронизации имен
+
 mqd_t client;
 void* clients_msg(void *param) {
 	char **msg_buff = (char **)param;
@@ -24,15 +29,14 @@ void* clients_msg(void *param) {
 }
 
 int main(int argc, char *argv[]) {
-
+	mqd_t sinc_msg;
 	mqd_t msg;
 	mqd_t sign;
-	//mqd_t client;
 	char** msg_buff = malloc(sizeof(char*));
 	char msg_b[80];
 	char  client_ch[80] = "/";
+	char status[3] = "Ok";
 	pthread_t tid_msg;
-	//msg_buff[count_m] = malloc(80);
 	strcat(client_ch, argv[1]);
 	if((msg = mq_open(NAME_MSG, O_RDWR)) == -1) {
                 perror("MSG mq_open:");
@@ -58,11 +62,38 @@ int main(int argc, char *argv[]) {
     		perror("Strcmp :");
     		exit(1);
     	} 
-	//sleep(1);
 	if((client = mq_open(client_ch, O_RDWR)) == -1) {
                 perror("client mq_open:");
                 exit(1);
         }
+/*	if((sinc_msg = mq_open(NAME_SINC_MSG, O_RDWR)) == -1) {
+                perror("Msg_sinc mq_open:");
+                exit(1);
+        }
+	if(mq_send(sinc_msg, status, strlen(status) + 1, sgn_prio_sinc_msg_send) == -1) {
+                perror("Msg_sinc mq_send");
+                exit(1);
+        }
+        printf("sended sinc-msg\n");
+	while(1) {
+		msg_buff[count_m] = malloc(80);
+		printf("waiting sinc-msg\n");
+		if(mq_receive(sinc_msg, msg_buff[count_m], 80, &sgn_prio_sinc_msg_receive) == -1) {
+                        perror("SIGN mq_receive");
+                        exit(1);
+        	}
+		count_m++;
+		printf("got sinc-msg: %s\n", msg_buff[count_m-1]);
+		if(strcmp(msg_buff[count_m-1], "end-sinc-msg") == 0) {
+			break;
+		}
+
+	}
+	printf("**********list of msg************\n");
+	for(int i = 0; i < count_m; i++) {
+		printf("[%d] %s\n", i, msg_buff[i]);
+	}
+	printf("*********************************\n");*/
 	pthread_create(&tid_msg, NULL, clients_msg, msg_buff);
 	while(1) {
 		printf("input  msg: ");
