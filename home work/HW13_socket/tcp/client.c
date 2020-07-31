@@ -24,21 +24,14 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	
-	if(send(fd, buffer, strlen(buffer), MSG_CONFIRM) == -1) {
+	printf("connected to %d\n", fd);
+	if(send(fd, buffer, strlen(buffer), 0) == -1) {
 		perror("Send");
 		exit(1);
 	}
-	printf("send msg\n");
-	/*if(sendto(fd, buffer, strlen(buffer), MSG_CONFIRM, &server, len) == -1) {
-          	perror("Sendto:");
-          	exit(1);
-     	}
-	if(recvfrom(fd, buffer, sizeof(buffer), MSG_WAITALL, &server, &len) == -1) {
-          	perror("Recvfrom:");
-           	exit(1);
-      	}*/
+	printf("sended msg to %d\n", fd);
       	printf("wait msg\n");
-      	if((n = recv(fd, buffer, sizeof(buffer), MSG_WAITALL)) == -1) {
+      	if((n = recv(fd, buffer, sizeof(buffer), 0)) == -1) {
 			perror("Recv");
 			exit(1);
 	}

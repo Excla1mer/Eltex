@@ -25,21 +25,18 @@ int main() {
 		exit(1);
 	}
 	int len, n;
-	len = sizeof(client);
-	while(1) {
-		if ((listen(fd, 5)) == -1) { 
+	len = sizeof(server);
+	if ((listen(fd, 5)) == -1) { 
         		perror("Listen"); 
         		exit(1); 
-    		}
+    	}
+	while(1) {
+		
     		if((fd1 = accept(fd, (struct sockaddr *)&client, &len)) == -1) {
     			perror("accept");
     			exit(1);
     		}
     		printf("accept\n");
-		/*if((n = recvfrom(fd, buffer, sizeof(buffer), MSG_WAITALL, &client, &len)) == -1) {
-			perror("Recvfrom:");
-			exit(1);
-		}*/
 		printf("WAIT MSG\n");
 		if((n = recv(fd1, buffer, sizeof(buffer), 0)) == -1) {
 			perror("Recv");
@@ -50,10 +47,6 @@ int main() {
 		printf("%s\n", buffer);
 		strcpy(str, hi);
 		strcat(str, buffer);
-		/*if(sendto(fd, str, strlen(str), MSG_CONFIRM, &client, len) == -1) {
-			perror("Sendto:");
-			exit(1);
-		}*/
 		if(send(fd1, str, strlen(str), 0) == -1) {
 			perror("Sendto:");
 			exit(1);
