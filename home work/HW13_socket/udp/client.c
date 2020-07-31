@@ -1,7 +1,7 @@
 #include "header.h"
 
 #define PORT 8080
-
+#define ADDR "192.168.0.1"
 int main(int argc, char *argv[]) {
 	int fd;
 	char buffer[80];
@@ -14,14 +14,14 @@ int main(int argc, char *argv[]) {
         }
 	memset(&server, 0, sizeof(server));
         server.sin_family    = AF_INET;  
-        server.sin_addr.s_addr = INADDR_ANY;
+        server.sin_addr.s_addr = INADDR_ANY;/*htonl(ADDR);*/
         server.sin_port = htons(PORT);
 	len = sizeof(server);
-	if(sendto(fd, buffer, strlen(buffer), MSG_CONFIRM, &server, len) == -1) {
+	if(sendto(fd, buffer, strlen(buffer), MSG_CONFIRM, (struct sockaddr*)&server, len) == -1) {
                         perror("Sendto:");
                         exit(1);
      	}
-	if(recvfrom(fd, buffer, sizeof(buffer), MSG_WAITALL, &server, &len) == -1) {
+	if(recvfrom(fd, buffer, sizeof(buffer), MSG_WAITALL, (struct sockaddr*)&server, &len) == -1) {
                         perror("Recvfrom:");
                         exit(1);
       	}
