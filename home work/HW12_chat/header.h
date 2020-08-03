@@ -13,3 +13,10 @@
 #include <mqueue.h>
 #include <pthread.h>
 
+struct winsize size;
+
+
+WINDOW* wnd_l;
+WINDOW* wnd_r;
+WINDOW* wnd_b;
+
