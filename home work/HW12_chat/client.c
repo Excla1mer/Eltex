@@ -10,7 +10,7 @@ void sig_winch(int signo) {
     ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);
     resizeterm(size.ws_row, size.ws_col);
 }
-
+/* Структура хранящая в себе сообщения и имена всех пользователей чата */ 
 struct new {
 	char u_names[20][80];
 	char msg_buff[100][81];
@@ -20,69 +20,19 @@ struct new {
 unsigned int count_u; // количество юзеров в чате 
 unsigned int count_m; // количество сообщений в чате
 
-void box_users(struct winsize size, char u_names[20][80]) {
-    wnd_l = newwin(size.ws_row - 3, size.ws_col / 4, 0, 0);
-    box(wnd_l, '|', '-');
-    for(int i = 0; i < count_u; i++) {
-    	wmove(wnd_l , i+1, 1);
-    	wprintw(wnd_l,"%s", u_names[i]);
-    }
-    refresh();
-    wrefresh(wnd_l);
-    wrefresh(wnd_r);
-    wrefresh(wnd_b);
-}
-
-
-void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]) {
-    wnd_r = newwin(size.ws_row - 3, size.ws_col - (size.ws_col / 4), 0, (size.ws_col / 4));
-    box(wnd_r, '|', '-');
-    for(int i = 0; i < count_m; i++) {
-    	wmove(wnd_r , i+1 , 1);
-    	wprintw(wnd_r,"%s:%s", sender[i], msg_buff[i]);
-    }
-    refresh();
-    wrefresh(wnd_l);
-    wrefresh(wnd_r);
-    wrefresh(wnd_b);
-}
-
-void box_input(struct winsize size) {
-	wnd_b = newwin(3, size.ws_col, size.ws_row - 3, 0);
-	box(wnd_b, '|', '-');
-	refresh();
-    wrefresh(wnd_l);
-    wrefresh(wnd_r);
-    wrefresh(wnd_b);
-}
-
+void box_users(struct winsize size, char u_names[20][80]);
+void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]);
+void box_input(struct winsize size);
 
 struct mq_attr attr = {0, MAX_MSG, MAX_MSG_SIZE, 0};
 
 mqd_t client;
-/* Структура хранящая в себе сообщения и имена всех пользователей чата */ 
+
 
 /* Функция clients_msg ждет послупдения сообщеий в личный канал client.
    При получении сообщения записывает его в буффер сообщений msg_buff */
-void* clients_msg(void *param) {
-	struct new *st;
-	st = (struct new*)param;
-	while(1) {
-		//printf("wait msg:\n");
-		box_msg(size, st->msg_buff, st->sender);
-		box_users(size, st->u_names);
-		box_input(size);
-		if(mq_receive(client, st->msg_buff[count_m], MAX_MSG_SIZE, 0) == -1) {
-            perror("Client mq_receive");
-            exit(1);
-		} else count_m++;
-       	if(mq_receive(client, st->sender[count_m-1], MAX_MSG_SIZE, 0) == -1) {
-            perror("Client mq_receive");
-            exit(1);
-       	}
-		//printf("Got: %s\n", st->msg_buff[count_m-1]);
-	}
-}
+void* clients_msg(void *param);
+
 
 int main(int argc, char *argv[]) {
 	mqd_t sinc_msg;
@@ -120,6 +70,7 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	//printf("sended sign\n");
+	/* Цикл отвечающий за синхронизацию сообщений */
 	while(1) {
 		if(mq_receive(client, st.msg_buff[count_m], attr.mq_msgsize, 0) == -1) {
          	perror("Client mq_receive");
@@ -132,6 +83,7 @@ int main(int argc, char *argv[]) {
     	}
 	}
 	int tmp = 0;
+	/* Цикл отвечающий за синхронизацию отправителей сообщений */
 	while(1) {
 		if(mq_receive(client, st.sender[tmp], attr.mq_msgsize, 0) == -1) {
          	perror("Client mq_receive");
@@ -143,36 +95,27 @@ int main(int argc, char *argv[]) {
     	}
     	tmp++;
 	}
+	/* Цикл отвечающий за синхронизацию имен юзеров чата */
 	while(1) {
 		if(mq_receive(client, st.u_names[count_u], attr.mq_msgsize, 0) == -1) {
          	perror("Client mq_receive");
         	exit(1);
     	}
     	count_u++;
-    	//printf("%s\n", st.msg_buff[count_m-1]);
     	if(strcmp(st.u_names[count_u-1], "end-sinc-name") == 0) {
     		count_u--;
     		break;
     	}
     	
 	}
-	/*for(int i = 0; i < count_m; i++) {
-		if(mq_receive(client, st.sender[i], attr.mq_msgsize, 0) == -1) {
-         	perror("Client mq_receive");
-        	exit(1);
-    	}
-
-	}*/
-	/*printf("**********list of msg************\n");
-	for(int i = 0; i < count_m; i++) {
-		printf("[%d] %s\n", i, st.msg_buff[i]);
-	}
-	printf("*********************************\n");*/
 	pthread_create(&tid_msg, NULL, clients_msg, &st);
 	sleep(1);
 	while(1) {
-		//printf("input  msg: ");
 		wmove(wnd_b, 1, 1);
+		refresh();
+	    wrefresh(wnd_l);
+	    wrefresh(wnd_r);
+	    wrefresh(wnd_b);
 		wgetnstr(wnd_b, msg_b, 80);
 
 		if(mq_send(msg, msg_b, strlen(msg_b) + 1, 0) == -1) {
@@ -187,4 +130,73 @@ int main(int argc, char *argv[]) {
 	}
 
 	return 0;
+}
+
+void* clients_msg(void *param) {
+	struct new *st;
+	st = (struct new*)param;
+	while(1) {
+		box_msg(size, st->msg_buff, st->sender);
+		box_users(size, st->u_names);
+		box_input(size);
+		refresh();
+	    wrefresh(wnd_l);
+	    wrefresh(wnd_r);
+	    wrefresh(wnd_b);
+		if(mq_receive(client, st->msg_buff[count_m], MAX_MSG_SIZE, 0) == -1) {
+            perror("Client mq_receive");
+            exit(1);
+		} else count_m++;
+		if(strcmp(st->msg_buff[count_m-1], "new-user") == 0) {
+			count_m--;
+			if(mq_receive(client, st->u_names[count_u], MAX_MSG_SIZE, 0) == -1) {
+	            perror("Client mq_receive");
+	            exit(1);
+			}
+			count_u++;
+		}
+		else {
+			if(mq_receive(client, st->sender[count_m-1], MAX_MSG_SIZE, 0) == -1) {
+	            perror("Client mq_receive");
+	            exit(1);
+       		}
+		}
+       	
+		//printf("Got: %s\n", st->msg_buff[count_m-1]);
+	}
+}
+
+void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]) {
+    wnd_r = newwin(size.ws_row - 3, size.ws_col - (size.ws_col / 4), 0, (size.ws_col / 4));
+    box(wnd_r, '|', '-');
+    for(int i = 0; i < count_m; i++) {
+    	wmove(wnd_r , i+1 , 1);
+    	wprintw(wnd_r,"%s:%s", sender[i], msg_buff[i]);
+    }
+    /*refresh();
+    wrefresh(wnd_l);
+    wrefresh(wnd_r);
+    wrefresh(wnd_b);*/
+}
+
+void box_users(struct winsize size, char u_names[20][80]) {
+    wnd_l = newwin(size.ws_row - 3, size.ws_col / 4, 0, 0);
+    box(wnd_l, '|', '-');
+    for(int i = 0; i < count_u; i++) {
+    	wmove(wnd_l , i+1, 1);
+    	wprintw(wnd_l,"%s", u_names[i]);
+    }
+    /*refresh();
+    wrefresh(wnd_l);
+    wrefresh(wnd_r);
+    wrefresh(wnd_b);*/
+}
+
+void box_input(struct winsize size) {
+	wnd_b = newwin(3, size.ws_col, size.ws_row - 3, 0);
+	box(wnd_b, '|', '-');
+	/*refresh();
+    wrefresh(wnd_l);
+    wrefresh(wnd_r);
+    wrefresh(wnd_b);*/
 }

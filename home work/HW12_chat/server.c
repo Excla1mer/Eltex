@@ -9,21 +9,9 @@
 unsigned int count_u; // count of users
 unsigned int count_m; // count of messages 
 
-unsigned int sgn_prio_send = 1;
-unsigned int sgn_prio_receive = 2;
-unsigned int sgn_prio_sinc_msg_receive = 4; // приоритет для синхронизации сообщений 
-unsigned int sgn_prio_sinc_msg_send = 3; // приоритет для синхронизации сообщений 
-unsigned int sgn_prio_sinc_names = 5; // приоритет для синхронизации имен
-
-
 mqd_t client[100];
 
 struct mq_attr attr = {0, MAX_MSG, MAX_MSG_SIZE, 0};
-
-struct sinc_struct {
-	char **u_names;
-	char **msg_buff;
-};
 
 struct new {
 	char u_names[20][80];
@@ -141,6 +129,17 @@ void* signals(void *param) {
             	perror("client mq_send");
         		exit(1);
       		}
+        }
+        for(int i = 0; i <= count_u; i++) {
+        	if(mq_send(client[i], "new-user", 16, 0) == -1) {
+            	perror("client mq_send");
+        		exit(1);
+      		}
+      		if(mq_send(client[i], st->u_names[count_u], strlen(st->u_names[count_u]) + 1, 0) == -1) {
+            	perror("client mq_send");
+        		exit(1);
+      		}
+
         }
 		memset(client_ch, 0, 80);
 		strcat(client_ch, "/");
