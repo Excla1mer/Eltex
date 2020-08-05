@@ -12,7 +12,7 @@ void sig_winch(int signo) {
 }
 /* Структура хранящая в себе сообщения и имена всех пользователей чата */ 
 struct new {
-	char u_names[20][80];
+	char u_names[50][80];
 	char msg_buff[100][81];
 	char sender[100][80];
 };
@@ -20,6 +20,7 @@ sem_t *count_u;
 sem_t *count_m;
 int users;
 int messages;
+void* refresh_all(void *param);
 void box_users(struct winsize size, char u_names[20][80]);
 void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]);
 void box_input(struct winsize size);
@@ -30,10 +31,10 @@ int main(int argc, char *argv[]) {
 	mqd_t msg;
 	mqd_t sign;
 	struct new *st;
-	char msg_b[80] = "123";
+	char msg_b[80];
 	char  client_ch[80];
 	strcpy(client_ch, argv[1]);
-	
+	pthread_t refr;
     int shm_fd;
 
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
         perror("shm_open");
         exit(1);
     }
-    if((st = (struct new*)mmap(NULL, sizeof(st), PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0)) == -1) {
+    if((st = (struct new*)mmap(NULL, sizeof(struct new), PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0)) == -1) {
         perror("mmap");
         exit(1);
     } 
@@ -65,31 +66,45 @@ int main(int argc, char *argv[]) {
 	signal(SIGWINCH, sig_winch);
 	ioctl(fileno(stdout), TIOCGWINSZ, (char *) &size);
 	
-	//pthread_create(&tid_msg, NULL, clients_msg, &st);
+	//pthread_create(&refr, NULL, refresh_all, &st);
 	sleep(1);
 	while(1) {
-		wmove(wnd_b, 1, 1);
+		
 		box_msg(size, st->msg_buff, st->sender);
 		box_users(size, st->u_names);
 		box_input(size);
-		refresh();
+	    wmove(wnd_b, 1, 1);
+	    refresh();
 	    wrefresh(wnd_l);
 	    wrefresh(wnd_r);
 	    wrefresh(wnd_b);
 		wgetnstr(wnd_b, msg_b, 80);
-		refresh();
-	    wrefresh(wnd_l);
-	    wrefresh(wnd_r);
-	    wrefresh(wnd_b);
+	    //scanf("%s", msg_b);
 		sem_getvalue(count_m, &messages);
 		strcpy(st->msg_buff[messages], msg_b);
-		strcpy(st->sender[messages], client_ch);
+		strcpy(st->sender[messages], argv[1]);
 		sem_post(count_m);
+		memset(msg_b, 0, 80);
 	}
 
 	return 0;
 }
 
+/*void* refresh_all(void *param) {
+	struct new *st;
+	st = (struct new*)param;
+	while(1) {
+		box_msg(size, st->msg_buff, st->sender);
+		box_users(size, st->u_names);
+		box_input(size);
+		refresh();
+		wrefresh(wnd_l);
+	    wrefresh(wnd_r);
+	    wrefresh(wnd_b);
+		sleep(1);
+	}
+	
+}*/
 
 void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]) {
     wnd_r = newwin(size.ws_row - 3, size.ws_col - (size.ws_col / 4), 0, (size.ws_col / 4));
@@ -105,7 +120,7 @@ void box_msg(struct winsize size, char msg_buff[100][81], char sender[100][80]) 
     wrefresh(wnd_b);*/
 }
 
-void box_users(struct winsize size, char u_names[20][80]) {
+void box_users(struct winsize size, char u_names[50][80]) {
     wnd_l = newwin(size.ws_row - 3, size.ws_col / 4, 0, 0);
     box(wnd_l, '|', '-');
     sem_getvalue(count_u, &users);
