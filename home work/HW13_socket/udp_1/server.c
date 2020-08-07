@@ -1,4 +1,5 @@
 #include "header.h"
+pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 
 #define PORT 8080
 
@@ -10,15 +11,12 @@ void* pthread_server() {
 	struct sockaddr_in client; 
 	int n, len;
 	char buffer[80];
-	int i=0;
-	/*while(i != 10) {
-		i++;
-		sleep(1);
-	}*/
+	pthread_mutex_lock(&mut);
 	client.sin_family    = AF_INET;  
 	client.sin_addr.s_addr = INADDR_ANY;
 	client.sin_port = htons(8081 + count_of_clients);
-	
+	count_of_clients++;
+	pthread_mutex_unlock(&mut);
 	if((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 		perror("pthread_server Socket:");
 		exit(1);
@@ -29,42 +27,46 @@ void* pthread_server() {
 	}
 	len = sizeof(client);
 	while(1) {
-
+		printf("wait client %d\n", fd);
 		if((n = recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&client, &len)) == -1) {
 			perror("pthread_server Recvfrom:");
 			exit(1);
 		}
 		buffer[n] = '\0';
+		if(strcmp(buffer, "exit") == 0){
+			close(fd);
+			break;
+		}
 		buffer[0] = '9';
 		if(sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&client, len) == -1) {
 			perror("pthread_server Sendto:");
 			exit(1);
 		}
-
 	}
 
 }
 
 int main() {
-	char hi[80] = "Hi, ";
 	char str[80];
 	char buffer[80];
 	int fd;
 	pthread_t clients_pthread[100];
 	struct sockaddr_in client, server;
 	struct sockaddr_in clients[100];
+	struct in_addr inp;
 	if((fd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
 		perror("Socket:");
 		exit(1);
 	}
 	memset(&server, 0, sizeof(server));
 	memset(&client, 0, sizeof(client));
+	//inet_aton(ADDR, &inp);
 	server.sin_family    = AF_INET;  
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons(PORT); 
 
 	if(bind(fd, (struct sockaddr*)&server, sizeof(server)) == -1) {
-		perror("Bind:");
+		perror("Bind");
 		exit(1);
 	}
 	int len, n;
@@ -83,7 +85,7 @@ int main() {
 			exit(1);
 		}
 		printf("sended count_of_clients\n");
-		count_of_clients++;
+		
 		memset(str, 0, 80);
 		memset(buffer, 0, 80);
 	}
