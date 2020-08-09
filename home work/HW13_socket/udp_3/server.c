@@ -154,8 +154,10 @@ int main() {
          	exit(1);
         }
 		if(count_of_clients > CONST_SERVERS) {
-			max_count_clients_connect = count_of_clients;
-			clients_ports[count_of_clients][0] = 8080 + count_of_clients;
+			if(count_of_clients > max_count_clients_connect) {
+				max_count_clients_connect = count_of_clients;
+				clients_ports[count_of_clients][0] = 8080 + count_of_clients;
+			}
 			pthread_create(&clients_pthread[count_of_clients], NULL, pthread_server, &clients_ports[count_of_clients]);
 		} 	
 		memset(str, 0, 80);
