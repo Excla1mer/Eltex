@@ -21,6 +21,9 @@ int main() {
 		fgets(str, 255, stdin);
 		str[strlen(str) - 1] = '\0';
 		args[0] =  strtok(str, " ");
+		n = 0;
+		i = 0;
+		p = 0;
 		// Разбиваю строку на аргументы
 		while(args[i] != NULL) {
 			args[++i] = strtok(NULL, " ");
@@ -32,11 +35,20 @@ int main() {
 		for(int j = 0; j <= i;  j++)  {
 			if(args[j] == NULL) {
 				if(p == 0) {
-					execvp(run[0], run);
+					pid = fork();
+					if(pid == 0)
+						execvp(run[0], run);
+					else
+						wait(NULL);
 				} else {
 					run[n] = NAME;
+					printf("%s\n", run[n]);
 					//run[n+1] = NULL;
-					execvp(run[0], run);	
+					pid = fork();
+					if(pid == 0)
+						execvp(run[0], run);
+					else 
+						wait(NULL);	
 				}
 				break;
 			}
@@ -51,6 +63,8 @@ int main() {
 		                        execvp(run[0], run);
 		                } else {
 		                        wait(NULL);
+					int tmp = 0x03;
+		                        write(fifo_fd, &tmp, 1);
 					n = 0;
 
 		                }
