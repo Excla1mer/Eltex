@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	struct udphdr *header;
 	struct package *receive;
 /* Выставляю указатель на структуру заголовка udp в начало буффера кадра и заполняю его данными */
-	header = buffer;
+	header = (struct udphdr*)buffer;
 	header->uh_sport = htons(S_PORT);
 	header->uh_dport = htons(PORT);
 	header->uh_ulen  = htons(SIZE_PACKAGE);
@@ -63,8 +63,8 @@ int main(int argc, char *argv[]) {
         perror("Sendto:");
         exit(1);
  	}
- 	receive = buffer;
-	dport = &receive->udphdr[2];
+ 	receive = (struct package*)buffer;
+	dport = (short *)&receive->udphdr[2];
  	while(1) {
 		if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&server, &len) == -1) {
 		    perror("Recvfrom:");

@@ -41,14 +41,14 @@ int main(int argc, char *argv[]) {
 	struct package *receive;
 	struct iphdr *ip_hdr;
 /* Высталяю указатель на структуру ip заголовка в начало буфера и заполняю его */
-	ip_hdr = buffer;
+	ip_hdr = (struct iphdr*)buffer;
 	ip_hdr->vers_sizeh = 0x45;
 	ip_hdr->offset = 0x0040;
 	ip_hdr->ttl = 0x40;
 	ip_hdr->proto = 0x11;
 	ip_hdr->d_ip = 0x0100007f;
 /* Выставляю указатель на структуру заголовка udp на 21 байт буффера кадра и заполняю его данными */
-	header = &buffer[20];
+	header = (struct udphdr*)&buffer[20];
 	header->uh_sport = htons(S_PORT);
 	header->uh_dport = htons(PORT);
 	header->uh_ulen  = htons(SIZE_PACKAGE - 20);
@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
         perror("Sendto:");
         exit(1);
  	}
- 	receive = buffer;
-	dport = &receive->udphdr[2];
+ 	receive = (struct package*)buffer;
+	dport = (short *)&receive->udphdr[2];
  	while(1) {
 		if(recvfrom(fd, buffer, sizeof(buffer), 0, (struct sockaddr*)&server, &len) == -1) {
 		    perror("Recvfrom:");
