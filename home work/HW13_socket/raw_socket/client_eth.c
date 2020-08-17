@@ -5,6 +5,7 @@
 #define SIZE_PACKAGE 128
 /* Структура описывает пришедший пакет от сервера по полям */
 struct package {
+	char Eth[14];
 	char network[20]; 	// Заголовок сетевого уровня 20 байт
 	char udphdr[8];		// Заколовок транспортного уровня 8 байт
 	char msg[100]; 		// Полузная нагрузка 100 байт
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
 	int fd, fd1;
 	char buffer[128];
 	int len;
-	short *dport;
+	unsigned short *dport;
 	memset(buffer, 0, 128);
 	struct sockaddr_in client;
 	struct sockaddr_ll server;
@@ -50,30 +51,30 @@ int main(int argc, char *argv[]) {
 	struct iphdr *ip_hdr;
 	struct ethhdr1 *eth_hdr;
 	eth_hdr = (struct ethhdr1*)buffer;
-	eth_hdr->MAC_D[0] = 0x52;
-	eth_hdr->MAC_D[1] = 0x54;
-	eth_hdr->MAC_D[2] = 0x00;
-	eth_hdr->MAC_D[3] = 0x12;
-	eth_hdr->MAC_D[4] = 0x35;
-	eth_hdr->MAC_D[5] = 0x02;
+	eth_hdr->MAC_D[0] = 0x08;
+	eth_hdr->MAC_D[1] = 0x00;
+	eth_hdr->MAC_D[2] = 0x27;
+	eth_hdr->MAC_D[3] = 0x32;
+	eth_hdr->MAC_D[4] = 0x51;
+	eth_hdr->MAC_D[5] = 0x86;
 	eth_hdr->MAC_S[0] = 0x08;
 	eth_hdr->MAC_S[1] = 0x00;
 	eth_hdr->MAC_S[2] = 0x27;
-	eth_hdr->MAC_S[3] = 0x40;
-	eth_hdr->MAC_S[4] = 0x08;
-	eth_hdr->MAC_S[5] = 0x23;
+	eth_hdr->MAC_S[3] = 0x3b;
+	eth_hdr->MAC_S[4] = 0x36;
+	eth_hdr->MAC_S[5] = 0xc8;
 	eth_hdr->type  = htons(0x0800);
 /* Высталяю указатель на структуру ip заголовка в начало буфера и заполняю его */
 	ip_hdr = (struct iphdr*)&buffer[14];
 	ip_hdr->vers_sizeh = 0x45;
 	ip_hdr->size_packege = htons(SIZE_PACKAGE - 14);
-	ip_hdr->id = 0x1234;
-	ip_hdr->offset = 0x0040;
+	ip_hdr->id = htons(0x1234);
+	ip_hdr->offset = htons(0x4000);
 	ip_hdr->ttl = 0x40;
 	ip_hdr->proto = 0x11;
+	ip_hdr->s_ip = inet_addr("172.21.0.222");
+	ip_hdr->d_ip = inet_addr("172.21.0.223");
 	ip_hdr->checksum = csum(&buffer[14]);
-	ip_hdr->s_ip = inet_addr("127.0.0.1");
-	ip_hdr->d_ip = 0x0100007f;
 /* Выставляю указатель на структуру заголовка udp на 34 байт буффера кадра и заполняю его данными */
 	header = (struct udphdr*)&buffer[34];
 	header->uh_sport = htons(S_PORT);
@@ -107,7 +108,7 @@ int main(int argc, char *argv[]) {
 	memset(&server, 0, sizeof(server));
 
     server.sll_family    	= AF_PACKET;
-    server.sll_ifindex		= if_nametoindex("enp0s3");
+    server.sll_ifindex		= if_nametoindex("enp0s8");
     server.sll_halen 		= 6;
 
 
@@ -124,6 +125,7 @@ int main(int argc, char *argv[]) {
 		    exit(1);
 		}
 		/* Обрабатываю все пакеты и смотрю какие предназначены мне, а какие нет */
+		printf("%d\n", ntohs(*dport));
 		if(ntohs(*dport) == S_PORT) {
 			printf("It's mine: ");
 			printf("%s\n", receive->msg);
@@ -136,22 +138,24 @@ int main(int argc, char *argv[]) {
 
 
 short csum(char *buffer) {
-	int tmp, Csum;
+	int tmp = 0, Csum = 0;
 	short *ptr;
 	ptr = (short *)buffer;
 	for(int i = 0; i < 10; i++) {
-		Csum = Csum + *ptr;
+		Csum = Csum + (*ptr&0x0000ffff);
 		ptr++;
 	}
 	for(int i = 0; i < 2; i++) {
 		tmp = Csum >> 16;
+		Csum = Csum&0xffff;
 		if(tmp > 0) {
 			Csum = Csum + tmp;
+
 		}
 		else 
 			break;
 	}
 	Csum = ~Csum;
-	return (short *)Csum;
+	return (short *)(Csum&0xffff);
 
 }
