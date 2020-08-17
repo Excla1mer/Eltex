@@ -46,7 +46,9 @@ int main(int argc, char *argv[]) {
 	ip_hdr->offset = 0x0040;
 	ip_hdr->ttl = 0x40;
 	ip_hdr->proto = 0x11;
-	ip_hdr->d_ip = 0x0100007f;
+	ip_hdr->s_ip = inet_addr("127.0.0.1");
+	ip_hdr->d_ip = inet_addr("127.0.0.1");
+
 /* Выставляю указатель на структуру заголовка udp на 21 байт буффера кадра и заполняю его данными */
 	header = (struct udphdr*)&buffer[20];
 	header->uh_sport = htons(S_PORT);
